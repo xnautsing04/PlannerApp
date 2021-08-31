@@ -6,11 +6,11 @@
     android:padding="16dp"
     >
 
-    <ImageView
+    <CheckBox
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:src="@drawable/Exercise"
-        android:id="@+id/imageView"
+        android:checked="false"
+        android:id="@+id/checkBoxDelete"
         />
 
     <LinearLayout
@@ -18,43 +18,33 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
         
-        
+            <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textViewTitle"
+            android:text="SampleTitle"
+            android:textColor="#000"
+            android:textStyle="bold"
+            android:textSize="20sp"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             >
-            <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/textViewTitle"
-            android:text="Title"
-            android:textColor="#000"
-            android:textStyle="bold"
-            android:textSize="20sp"/>
-
-            <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text=":"
-            android:textColor="#000"
-            android:textStyle="bold"
-            android:textSize="20sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Start"
-                android:id="@+id/textViewStartTime"
+                android:layout_height="wrap_content"
+                android:text="8/15/2001"
+                android:id="@+id/textViewDate"
                 android:textColor="#000"
                 android:textStyle="bold"
-                android:layout_marginLeft="5dp"
                 android:textSize="20sp"/>
 
             <TextView
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="-"
+            android:layout_height="wrap_content"
+            android:text=" "
             android:textColor="#000"
             android:textStyle="bold"
             android:textSize="20sp"/>
@@ -62,7 +52,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:text="End"
+                android:text="6:00pm"
                 android:id="@+id/textViewEndTime"
                 android:textColor="#000"
                 android:textStyle="bold"
@@ -75,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/textViewDescription"
-            android:text="Description"
+            android:text="Sample Description"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:textSize="18sp"

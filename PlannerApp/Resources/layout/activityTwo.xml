@@ -13,14 +13,30 @@
 
 
     <TextView
-        android:layout_width="273.0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="44dp"
-        android:text="June 17th"
         android:textStyle="bold"
         android:textColor="#000000"
-        android:id="@+id/textView1"
-        android:layout_marginLeft="95dp" />
+        android:layout_marginLeft="10dp"
+        android:id="@+id/viewDate"
+        />
+
+    <Button
+        android:layout_width="273.0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="65dp"
+        android:text="Back"
+        android:textSize="38dp"
+        android:id="@+id/backButton"/>
+
+    <Button
+        android:layout_width="160.0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="118dp"
+        android:text="Delete"
+        android:textSize="38dp"
+        android:id="@+id/deleteButton"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
