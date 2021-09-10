@@ -4,16 +4,85 @@ using Android.Runtime;
 using Android.Widget;
 using Android.Content;
 using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Nito.AsyncEx;
+using PlannerApp.Models;
+using PlannerApp.Data;
+using WindowsAzure.Messaging.NotificationHubs;
 
+//TO DO: initiate a notification
+//TO DO: optimize screen size depending on device
 
 namespace PlannerApp
 {
     //this is the script that plays when the app starts, loads the calendar for the current month
-    [Activity(Label = "Main", MainLauncher = true, Theme = "@style/AppTheme")] 
+    [Activity(Label = "Main", MainLauncher = false, Theme = "@style/AppTheme")] 
 
 
     public class MainActivity : Activity
     {
+
+
+        //a list of all reminders to be sorted to use for upcoming three reminders
+        public static List<Reminder> reminderList = new List<Reminder>();
+        Reminder[] upcomingArray;
+
+        //This function retrieves the elements of the database
+        async Task findUpcomingReminders()
+        {
+            ReminderDatabase database = await ReminderDatabase.Instance;
+            reminderList = await database.GetItemsAsync();
+        }
+
+
+
+        void sortUpcoming()
+        {
+            upcomingArray = new Reminder[reminderList.Count];
+
+            for (int i = 0; i < reminderList.Count; ++i)
+            {
+                upcomingArray[i] = reminderList[i];
+            }
+
+            ReminderGroup.sortReminders(upcomingArray, 0, upcomingArray.Length);
+
+
+            if (upcomingArray.Length > 3)
+            {
+                Reminder[] newArray = new Reminder[3];
+
+                for (int j = 0; j < 3; ++j)
+                {
+                    newArray[j] = upcomingArray[j];
+                }
+                upcomingArray = newArray;
+            }
+
+            populateReminders();
+        }
+
+        void populateReminders()
+        {
+            var upcomingOne = FindViewById<TextView>(Resource.Id.upcoming1);
+            var upcomingTwo = FindViewById<TextView>(Resource.Id.upcoming2);
+            var upcomingThree = FindViewById<TextView>(Resource.Id.upcoming3);
+            switch(upcomingArray.Length)
+            { case 3:
+                    upcomingThree.Text = upcomingArray[2].name + ": " + upcomingArray[2].date + " @ " + upcomingArray[2].time;
+                    goto case 2;
+              case 2:
+                    upcomingTwo.Text = upcomingArray[1].name + ": " + upcomingArray[1].date + " @ " + upcomingArray[1].time;
+                    goto case 1;
+              case 1:
+                    upcomingOne.Text = upcomingArray[0].name + ": " + upcomingArray[0].date + " @ " + upcomingArray[0].time;
+                    break;
+            }
+
+                    
+        }
+
         //This function listens for each of the possible buttons on the main page calandar
         public void ButtonListen(string monthText, string year)
         {
@@ -763,26 +832,33 @@ namespace PlannerApp
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
+
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
+            AsyncContext.Run(findUpcomingReminders);
+
+            sortUpcoming();
+
             //the Textview above the main calendar that displays the month and year 
             var dateOnScreen = FindViewById<TextView>(Resource.Id.monthCurrent);
 
             //finds the month/date/year based on the DateTime.Now function
-            string month = DateTime.Now.ToString("MM");
-            string date = DateTime.Now.ToString("dd");
-            string year = DateTime.Now.ToString("yyyy");
+            string month = Intent.GetStringExtra("month");
+            string date = Intent.GetStringExtra("date");
+            string year = Intent.GetStringExtra("year");
 
             //display the date on the screen with the month (switched to String)
             string monthText = findMonthText(month);
-            string monthYear = monthText + " " + year;
+            string monthYear = monthText.Substring(0, 3) + " " + year;
             dateOnScreen.Text = monthYear;
 
             //this will populate the calendar
             findInitDay(month, year);
+
 
             //listen for all the calendar buttons to switch the layout
             ButtonListen(month, year);
@@ -795,6 +871,62 @@ namespace PlannerApp
                 StartActivity(nextActivity);
             };
 
+            //this button listens for the upCalendar button to move the calendar up one month
+            var upCalendar = FindViewById<Button>(Resource.Id.UpCalendar);
+            upCalendar.Click += (s, e) =>
+            {
+                int monthNum = int.Parse(month);
+                int yearNum = int.Parse(year);
+                monthNum++;
+                if (monthNum == 13)
+                {
+                    monthNum = 1;
+                    yearNum++;
+                }
+                
+                if (monthNum < 10)
+                    month = "0" + monthNum.ToString();
+                else
+                    month = monthNum.ToString();
+
+                year = yearNum.ToString();
+
+                Intent nextActivity = new Intent(this, typeof(MainActivity));
+                nextActivity.PutExtra("month", month);
+                nextActivity.PutExtra("date", date);
+                nextActivity.PutExtra("year", year);
+                StartActivity(nextActivity);
+
+            };
+
+            //this button listens for the downCalendar to move the calendar down one month
+            var downCalendar = FindViewById<Button>(Resource.Id.DownCalendar);
+            downCalendar.Click += (s, e) =>
+            {
+                int monthNum = int.Parse(month);
+                int yearNum = int.Parse(year);
+                monthNum--;
+                if (monthNum == 0)
+                {
+                    monthNum = 12;
+                    yearNum--;
+                }
+
+                if (monthNum < 10)
+                    month = "0" + monthNum.ToString();
+                else
+                    month = monthNum.ToString();
+
+                year = yearNum.ToString();
+
+                Intent nextActivity = new Intent(this, typeof(MainActivity));
+                nextActivity.PutExtra("month", month);
+                nextActivity.PutExtra("date", date);
+                nextActivity.PutExtra("year", year);
+                StartActivity(nextActivity);
+            };
+
+            
         }
 
         //deal with the permissions for the activity

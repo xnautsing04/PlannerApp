@@ -88,7 +88,7 @@ namespace PlannerApp
 
     [Activity(Label = "activityTwo", Theme = "@style/AppTheme")]
 
-    //the main class for this activity, deals with the individual pages for a specific day
+    //the main class for this activity, deals with the individual pages that lists the reminders for a specific day
     public class activityTwo : AppCompatActivity
     {
         RecyclerView mRecyclerView; //the recyclerView object that is displayed in the .xml file
@@ -139,7 +139,7 @@ namespace PlannerApp
             var backButton = FindViewById<Button>(Resource.Id.backButton);
             backButton.Click += (s, e) =>
             {
-                Intent nextActivity = new Intent(this, typeof(MainActivity));
+                Intent nextActivity = new Intent(this, typeof(InitiateCalendar));
                 StartActivity(nextActivity);
             };
 
@@ -151,6 +151,9 @@ namespace PlannerApp
 
                 //reload the activity to show the database with the new changes
                 Intent nextActivity = new Intent(this, typeof(activityTwo));
+                nextActivity.PutExtra("month", month);
+                nextActivity.PutExtra("day", day);
+                nextActivity.PutExtra("year", year);
                 StartActivity(nextActivity);
 
             };

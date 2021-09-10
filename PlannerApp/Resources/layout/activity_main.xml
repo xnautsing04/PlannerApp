@@ -18,8 +18,35 @@
             android:textStyle="bold"
             android:layout_row="0"
             android:layout_column="0"
-            android:layout_columnSpan="6"/>
+            android:layout_columnSpan="4"/>
 
+    <LinearLayout
+          android:orientation="vertical"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_row="0"
+          android:layout_column="4"
+          android:layout_marginLeft="20dp"
+          android:layout_columnSpan="3">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/UpCalendar"
+            android:text="▲"
+            android:textSize="20dp"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/DownCalendar"
+            android:text="▼"
+            android:textSize="20dp"
+            />
+
+
+        </LinearLayout>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -357,17 +384,59 @@
             android:id="@+id/date41"
             android:layout_row="7"
             android:layout_column="6"/>
+        
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_row="8"
+        android:layout_column="0"
+        android:layout_columnSpan="7"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="35dp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:text="Upcoming:"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_row="8"
             android:textSize="20dp"
-            android:layout_column="0"
-            android:layout_columnSpan="2"
             android:textColor="@android:color/black"
             android:textStyle="bold"
-            android:text="Upcoming:"/>
+            android:text=""/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:id="@+id/upcoming1"
+            android:text=""/>
+
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:id="@+id/upcoming2"
+            android:text=""/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:id="@+id/upcoming3"
+            android:text=""/>
+
+    </LinearLayout>
 
 
 </GridLayout>

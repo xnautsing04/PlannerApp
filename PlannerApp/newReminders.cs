@@ -47,14 +47,14 @@ namespace PlannerApp
                 await database.SaveItemAsync(newReminder);
 
                 //return back to the MainActivity
-                Intent nextActivity = new Intent(this, typeof(MainActivity));
+                Intent nextActivity = new Intent(this, typeof(InitiateCalendar));
                 StartActivity(nextActivity);
             };
 
             //if the backButton is clicked, return to MainActivity without accessing anything to the database
             backButton.Click += (s, e) =>
             {
-                Intent nextActivity = new Intent(this, typeof(MainActivity));
+                Intent nextActivity = new Intent(this, typeof(InitiateCalendar));
                 StartActivity(nextActivity);
             };
         }
