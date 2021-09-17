@@ -7,13 +7,13 @@ using System;
 
 namespace PlannerApp
 {
-    //this class stores the elements to be used on a given instance of the defined recyclerView in activityTwo
+    //This class stores the elements to be used on a given instance of the defined recyclerView in activityTwo.
     public class ReminderGroup
     {
-        //the list that will store all current reminders from the database
+        //The list that will store all current reminders from the database.
         public static List<Reminder> exampleReminders;
        
-        //an array that will store on the reminders that fall on the given date
+        //An array that will store on the reminders that fall on the given date.
         private Reminder[] mReminders;
 
         private string month;
@@ -21,7 +21,7 @@ namespace PlannerApp
         private string year;
         
 
-        //this function gathers all of the reminders from the database and stores them in exampleReminders to be filtered later
+        //This function gathers all of the reminders from the database and stores them in exampleReminders to be filtered later.
         async Task initializeExample()
         {
             ReminderDatabase database = await ReminderDatabase.Instance;
@@ -30,17 +30,18 @@ namespace PlannerApp
 
         async Task completeReminderInit()
         {
-            //create an array of newReminders, and make it as big as exampleRemiders as a precaution. This will store the reminders
-            //that fall on the given date selected
+            //Create an array of newReminders, and make it as big as exampleRemiders as a precaution. This will store the reminders
+            //that fall on the given date selected.
             Reminder[] newReminders = new Reminder[exampleReminders.Count];
 
-            //store the amount of reminders that get added to newReminders, as it will be used as a new size in a later array initialization
+            //Store the amount of reminders that get added to newReminders, as it will be used as a new size in
+            //a later array initialization
             int count = 0;
 
-            //iterate through all the elements
+            //Iterate through all the elements
             for (int i = 0; i < exampleReminders.Count; ++i)
             {
-                //split the date element in the reminder into month, date, and year
+                //Split the date element in the reminder into month, date, and year
                 string total = month + "/" + date + "/" + year +  " " + exampleReminders[i].time;
                 string[] currDate = exampleReminders[i].date.Split('/');
                 string time = currDate[0] + "/" + currDate[1] + "/" + currDate[2] + " " + exampleReminders[i].time;
@@ -52,7 +53,7 @@ namespace PlannerApp
 
 
 
-                //if the elements all match, add it to newReminders
+                //If the elements all match, add it to newReminders.
                 if (currDT ==selectedDate && currDT >= DateTime.Now)
                 {
                     newReminders[count++] = exampleReminders[i];
@@ -62,7 +63,7 @@ namespace PlannerApp
                     await deleteOutdated(exampleReminders[i]);
                 }
             }
-            mReminders = new Reminder[count]; //initialize mReminders with count size, as to make sure it has the correct size
+            mReminders = new Reminder[count]; //Initialize mReminders with count size, as to make sure it has the correct size
             for (int j = 0; j < count; ++j)
             {
                 mReminders[j] = newReminders[j];
@@ -72,11 +73,11 @@ namespace PlannerApp
                 sortReminders(mReminders, 0, numReminders);
         }
 
-        //constructor for the class; will call initializeExample and filter all reminders to find the ones that fall on the given
-        //date, which is sent as three strings storing the month, the date, and the year
+        //This is the constructor for the class; will call initializeExample and filter all reminders to find the ones
+        //that fall on the given date, which is sent as three strings storing the month, the date, and the year.
         public ReminderGroup(string month, string date, string year)
         {
-            AsyncContext.Run(initializeExample); //asynchronously run the initializeExample function to fill the exampleReminders fucntion
+            AsyncContext.Run(initializeExample); //Asynchronously run the initializeExample function to fill the exampleReminders fucntion
 
             this.month = month;
             this.date = date;
@@ -85,20 +86,20 @@ namespace PlannerApp
             AsyncContext.Run(completeReminderInit);
         }
 
-        //return the length of mReminders
+        //This returns the length of mReminders.
         public int numReminders
         {
             get { return mReminders.Length; }
         }
 
-        //return an individual element in mReminders
+        //Return an individual element in mReminders.
         public Reminder this[int i]
         {
             get { return mReminders[i]; }
         }
 
-        //this will be called when a checkmark on any of the current views is selected, based on what the current state is
-        //it will either be changed to true or false
+        //This will be called when a checkmark on any of the current views is selected, based on what the current state is
+        //it will either be changed to true or false.
         public void HandleCustomEvent(object sender, int a)
         {
             if (mReminders[a].selected == false)
@@ -112,12 +113,12 @@ namespace PlannerApp
             }
         }
 
-        //if the deleteButton is selected in activityTwo, remove all reminders that have a check from the database
+        //If the deleteButton is selected in activityTwo, remove all reminders that have a check from the database.
         public async Task deleteCheckmarked()
         {
             ReminderDatabase database = await ReminderDatabase.Instance;
 
-            //is the selected bool is true, then go ahead and delete that element
+            //If the selected bool is true, then go ahead and delete that element.
             for (int i = 0; i < mReminders.Length; ++i)
             {
                 if (mReminders[i].selected == true)
@@ -128,6 +129,8 @@ namespace PlannerApp
 
         }
 
+        //The second part of the mergeSort algorithm. This is the merge part of the algorithm, where it compares two elements
+        //and places them in the correct order by comparing the two subsets.
         static void sortMerge(Reminder[] remindArr, int low, int mid, int high)
         {
             int n = high - low;
@@ -171,6 +174,7 @@ namespace PlannerApp
             }
         }
 
+        //This function will begin a mergeSort algorithm, doing the "divide" part of the "divide and conquer" algorithm.
         public static void sortReminders(Reminder[] remindArr, int low, int high)
         {
             if (low < high)
@@ -183,6 +187,7 @@ namespace PlannerApp
             }
         }
 
+        //This function will delete all the reminders that are older than the current time.
         public async Task deleteOutdated(Reminder elem)
         {
             ReminderDatabase database = await ReminderDatabase.Instance;

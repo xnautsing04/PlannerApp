@@ -9,27 +9,33 @@ using Android.Content;
 using Nito.AsyncEx;
 using System;
 
+//This activity is meant to display all of the reminders for a selected day. Each reminder will have a checkmark, so that
+//clicking the Delete button will reset and remove the elements from the SQLite Database. A back button also exists, sending the user
+//to MainActivity without deleting any buttons.
+
 namespace PlannerApp
 {
-    //this class holds the views that are to be used by individual elements in the recyclerview
+    //This class holds the views that are to be used by individual elements in the recyclerview. This includes the title, description
+    //, Date, Time, and boolean value for whether it has been selected for deletion.
     public class ReminderGroupHolder : RecyclerView.ViewHolder
     {
         public TextView Title { get; private set; }
         public TextView Description { get; private set; }
-        public TextView startTime { get; private set; }
-        public TextView endTime { get; private set; }
+        public TextView Date { get; private set; }
+        public TextView Time { get; private set; }
         public CheckBox selected { get; private set; }
 
-        //constructor that sends the listener for the itemClicks and the individual view to be applied
+        //This is the constructor that sends the listener for the itemClicks and the individual view to be applied.
         public ReminderGroupHolder(View itemView, Action<int> listener) : base(itemView)
         {
             Title = itemView.FindViewById<TextView>(Resource.Id.textViewTitle);
             Description = itemView.FindViewById<TextView>(Resource.Id.textViewDescription);
-            startTime = itemView.FindViewById<TextView>(Resource.Id.textViewDate);
-            endTime = itemView.FindViewById<TextView>(Resource.Id.textViewEndTime);
+            Date = itemView.FindViewById<TextView>(Resource.Id.textViewDate);
+            Time = itemView.FindViewById<TextView>(Resource.Id.textViewEndTime);
             selected = itemView.FindViewById<CheckBox>(Resource.Id.checkBoxDelete);
 
-            selected.Click += (sender, e) => listener(base.LayoutPosition); //button that listens for the CheckBox attached to each element
+            selected.Click += (sender, e) => listener(base.LayoutPosition); 
+            //This is the button that listens for the CheckBox attached to each element
         }
 
 
@@ -37,47 +43,47 @@ namespace PlannerApp
 
     }
 
-    //this class is the adapter used by the recyclerview; this is used to both track itemClicks and
+    //This class is the adapter used by the recyclerview; this is used to both track itemClicks and
     //apply the individual reminders to the views
     public class ReminderGroupAdapter : RecyclerView.Adapter
     {
-        public ReminderGroup mReminderGroup; //stores all the current reminders to be loaded
-        public event EventHandler<int> itemClick; //eventHandler for checking which view is checked
+        public ReminderGroup mReminderGroup; //This stores all the current reminders to be loaded.
+        public event EventHandler<int> itemClick; //This is the eventHandler for checking which view is checkmarked.
 
-        //constructor that stores the given reminderGroup to the mReminderGroup variable
+        //This is the constructor that stores the given reminderGroup to the mReminderGroup variable.
         public ReminderGroupAdapter(ReminderGroup reminderGroup)
         {
             mReminderGroup = reminderGroup;
         }
 
-        // creates an instance of a reminderGroupHolder so it is able to apply all of the elements in the view to the
-        // given parameters of the each Reminder element
+        // This creates an instance of a reminderGroupHolder so it is able to apply all of the elements in the view to the
+        // given parameters of each Reminder element.
         public override RecyclerView.ViewHolder
             OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             View itemholder = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.row, parent, false);
             ReminderGroupHolder vh = new ReminderGroupHolder(itemholder, OnClick);
-            return vh; //return the new view to be displayed 
+            return vh; //This returns the new view to be displayed.
         }
 
-        //this function puts the current reminder onto the current view holder; as the views are re-used, this is called so
-        //that the views display the next (or previous) reminder to create the illusion of a continuous list of items
+        //This function puts the current reminder onto the current view holder; as the views are re-used, this is called so
+        //that the views display the next (or previous) reminder to create the illusion of a continuous list of items.
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
             ReminderGroupHolder vh = holder as ReminderGroupHolder;
             vh.Title.Text = mReminderGroup[position].name;
             vh.Description.Text = mReminderGroup[position].description;
-            vh.startTime.Text = mReminderGroup[position].date;
-            vh.endTime.Text = mReminderGroup[position].time;
+            vh.Date.Text = mReminderGroup[position].date;
+            vh.Time.Text = mReminderGroup[position].time;
         }
 
-        //this function returns the amount of reminders within mReminderGroup
+        //This function returns the amount of reminders within mReminderGroup.
         public override int ItemCount
         {
             get { return mReminderGroup.numReminders; }
         }
 
-        //if one of the views is clicked (and the click is not null), it will call the itemClick function to either check or uncheck
+        //If one of the views is clicked (and the click is not null), it will call the itemClick function to either check or uncheck
         //the checkbox on the view and in the reminderGroup itself
         void OnClick (int position)
         {
@@ -88,15 +94,15 @@ namespace PlannerApp
 
     [Activity(Label = "activityTwo", Theme = "@style/AppTheme")]
 
-    //the main class for this activity, deals with the individual pages that lists the reminders for a specific day
+    //The main class for this activity. It deals with the individual pages that lists the reminders for a specific day.
     public class activityTwo : AppCompatActivity
     {
-        RecyclerView mRecyclerView; //the recyclerView object that is displayed in the .xml file
-        RecyclerView.LayoutManager mLayoutManager; //the layoutManager that is used by the recyclerView
-        ReminderGroupAdapter mAdapter; //the adapter that is used by the recyclerView; this class is defined above
-        public ReminderGroup mReminderGroup; //the reminderGroup that is created to store the individual reminders to be displayed
+        RecyclerView mRecyclerView; //The recyclerView object that is displayed in the .xml file.
+        RecyclerView.LayoutManager mLayoutManager; //The layoutManager that is used by the recyclerView.
+        ReminderGroupAdapter mAdapter; //The adapter that is used by the recyclerView; this class is defined above.
+        public ReminderGroup mReminderGroup; //The reminderGroup that is created to store the individual reminders to be displayed.
         
-        //function that begins when the activity starts
+        //This is the function that begins when the activity starts.
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -105,37 +111,37 @@ namespace PlannerApp
             // Set our view from the activityTwo resource
             SetContentView(Resource.Layout.activityTwo);
 
-            //gather the stored date information given by the mainActivity activity
+            //This gathers the stored date information given by the MainActivity activity.
             string month = Intent.GetStringExtra("month");
             string day = Intent.GetStringExtra("day");
             string year = Intent.GetStringExtra("year");
 
-            //convert the number form into a word form
+            //This converts the number form into a word form by using the function defined in MainActivity.
             string monthText = MainActivity.findMonthText(month);
 
-            //combine the strings and use it to display atop the screen
+            //This combines the strings and uses it to display atop the screen.
             string fullDate = monthText + " " + day + ", " + year;
 
             var clickedDate = FindViewById<TextView>(Resource.Id.viewDate);
             clickedDate.Text = fullDate;
 
-            //find the recyclerView to be displayed
+            //This finds the recyclerView to be displayed.
             mRecyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
-            mReminderGroup = new ReminderGroup(month, day, year); //create the reminderGroup, the date is used to decide which reminders
-                                                                  //will show up
+            //This create the reminderGroup, the date is used to decide which reminders will show up
+            mReminderGroup = new ReminderGroup(month, day, year); 
                 
-            //set the layoutManager to a linearLayout
+            //This sets the layoutManager to a linearLayout.
             mLayoutManager = new LinearLayoutManager(this);
             mRecyclerView.SetLayoutManager(mLayoutManager);
 
-            //create the adapter, and subscrbe the click function to the necessary functions in mReminderGroup and
-            //then set the adapter of the recyclerView to this item
+            //Create the adapter, and subscrbe the click function to the necessary functions in mReminderGroup and
+            //then set the adapter of the recyclerView to this item.
             mAdapter = new ReminderGroupAdapter(mReminderGroup);
             mAdapter.itemClick += mReminderGroup.HandleCustomEvent;
             mRecyclerView.SetAdapter(mAdapter);
 
 
-            //if the backButton is clicked, go back to mainActivity
+            //If the backButton is clicked, go back to mainActivity.
             var backButton = FindViewById<Button>(Resource.Id.backButton);
             backButton.Click += (s, e) =>
             {
@@ -143,13 +149,12 @@ namespace PlannerApp
                 StartActivity(nextActivity);
             };
 
-            //if the delete button is clicked, run an asynchronous function to delete the checked items
+            //If the delete button is clicked, run an asynchronous function to delete the checked items. Then, reload this activity.
             var deleteButton = FindViewById<Button>(Resource.Id.deleteButton);
             deleteButton.Click += (s, e) =>
             {
                 AsyncContext.Run(mReminderGroup.deleteCheckmarked);
 
-                //reload the activity to show the database with the new changes
                 Intent nextActivity = new Intent(this, typeof(activityTwo));
                 nextActivity.PutExtra("month", month);
                 nextActivity.PutExtra("day", day);
@@ -159,8 +164,6 @@ namespace PlannerApp
             };
 
         }
-
-        //deal with the permissions for the activity
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);

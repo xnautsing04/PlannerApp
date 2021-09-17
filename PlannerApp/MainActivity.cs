@@ -9,34 +9,117 @@ using System.Collections.Generic;
 using Nito.AsyncEx;
 using PlannerApp.Models;
 using PlannerApp.Data;
-using WindowsAzure.Messaging.NotificationHubs;
+using Android.Support.V4.App;
+using Android.Media;
 
-//TO DO: initiate a notification
-//TO DO: optimize screen size depending on device
+//This is the script that plays when the app starts. This loads the calendar asset for the current month, as found by DateTime.Now(). 
+//It also lists the three (or less if three is not applicable) upcoming reminders under the calendar, as well as arrows to change the month
+//currently being displayed and a plus button to add new reminders.
+
+//Clicking one of the valid calendar entries (one with an associated date) will link to a list of all reminders for that day.
 
 namespace PlannerApp
 {
-    //this is the script that plays when the app starts, loads the calendar for the current month
     [Activity(Label = "Main", MainLauncher = false, Theme = "@style/AppTheme")] 
-
 
     public class MainActivity : Activity
     {
 
-
-        //a list of all reminders to be sorted to use for upcoming three reminders
+        //This is a list of all reminders to be sorted to be used for the upcoming three reminders
         public static List<Reminder> reminderList = new List<Reminder>();
+        
+        //This is the sorted array, storing the three closest upcoming reminders.
         Reminder[] upcomingArray;
 
-        //This function retrieves the elements of the database
+        //This is the CHANNEL_ID for the notification channel, for sending the notifications when a reminder goes off.
+        public const string CHANNEL_ID = "pLannerAppNotifs9102021";
+
+        
+        //This function creates a notification channel to be used for sending out notifications at the time specified for a reminder.
+        //It retrieves the channel name and description stored in Resource, and uses then to create a channel. Then, it creates a
+        //notification manager, applying the channel to it.
+        void CreateNotificationChannel()
+        {
+            if (Build.VERSION.SdkInt < BuildVersionCodes.O)
+            {
+                return;
+            }
+            var channelName = Resources.GetString(Resource.String.channel_name);
+            var channelDescription = Resources.GetString(Resource.String.channel_description);
+
+            var channel = new NotificationChannel(CHANNEL_ID, channelName, NotificationImportance.Default);
+            channel.Description = channelDescription;
+
+            var notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            notificationManager.CreateNotificationChannel(channel);
+        }
+
+        //This will check every minute (if there is an element in the array) for upcomingReminders, and ensure that a notification will
+        //be sent if the time and day matches the current time.
+        void checkRemindersForNotif()
+        {
+            for (int i = 0; i < upcomingArray.Length; ++i)
+            {
+                string[] upcomingDate = upcomingArray[i].date.Split('/');
+                string upTime = upcomingDate[0] + "/" + upcomingDate[1] + "/" + upcomingDate[2] + " " + upcomingArray[i].time;
+                DateTime upDTime = DateTime.Parse(upTime,
+                                         System.Globalization.CultureInfo.InvariantCulture);
+
+                if (upDTime.Date == DateTime.Now.Date && upDTime.Hour == DateTime.Now.Hour && upDTime.Minute == DateTime.Now.Minute)
+                {
+                    //This is creating a notification once a match has been found between the element and the current time.
+                    //Clicking on the notification sends the user to an instance of activtyTwo.
+                    Intent notifIntent = new Intent(this, typeof(activityTwo));
+
+                    string month = DateTime.Now.ToString("MM");
+                    string day = DateTime.Now.ToString("dd");
+                    string year = DateTime.Now.ToString("yyyy");
+                    string monthText = findMonthText(month);
+
+                    notifIntent.PutExtra("month", month);
+                    notifIntent.PutExtra("day", day);
+                    notifIntent.PutExtra("year", year);
+
+                    //This ensures that when the user hits the back button, it sends them back to the home screen, and not an instance
+                    //of MainActivity.
+                    Android.App.TaskStackBuilder stackBuilder = Android.App.TaskStackBuilder.Create(this);
+                    stackBuilder.AddParentStack(Java.Lang.Class.FromType(typeof(activityTwo)));
+                    stackBuilder.AddNextIntent(notifIntent);
+
+
+                    //Now, the NotifCompat.Builder function is used to create and send the notification to the user's device.
+                    const int pendingInt = 0;
+                    PendingIntent pendingIntent = stackBuilder.GetPendingIntent(pendingInt, PendingIntentFlags.OneShot);
+
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .SetContentIntent(pendingIntent)
+                        .SetContentTitle(upcomingArray[i].name)
+                        .SetContentText(upcomingArray[i].description)
+                        .SetDefaults(0)
+                        .SetSmallIcon(Resource.Drawable.abc_ic_arrow_drop_right_black_24dp);
+
+                    Notification notification = builder.Build();
+
+                    Android.Net.Uri uri = RingtoneManager.GetDefaultUri(RingtoneType.Alarm);
+                    builder.SetSound(uri);
+
+                    NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
+
+                    int notificationID = DateTime.Now.Millisecond;
+                    notificationManager.Notify(notificationID, notification);
+                }
+            }
+        }
+
+        //This function retrieves the elements of the SQLite database asynchronously, which will then be used to sort and display.
         async Task findUpcomingReminders()
         {
             ReminderDatabase database = await ReminderDatabase.Instance;
             reminderList = await database.GetItemsAsync();
         }
 
-
-
+        //This function will use a mergeSort algorithm (found in the ReminderGroup class) on the elements in the reminderList, so that
+        //the most 3 (or less, is there are not 3 reminders) closest elements to the current time.
         void sortUpcoming()
         {
             upcomingArray = new Reminder[reminderList.Count];
@@ -63,6 +146,8 @@ namespace PlannerApp
             populateReminders();
         }
 
+        //This function will be called from the sortUpcoming function, in which it will display the 3 closest reminders under the 
+        //"Upcoming" text. If less than 3 reminders exist, it will only display however many are present.
         void populateReminders()
         {
             var upcomingOne = FindViewById<TextView>(Resource.Id.upcoming1);
@@ -83,7 +168,8 @@ namespace PlannerApp
                     
         }
 
-        //This function listens for each of the possible buttons on the main page calandar
+        //This function listens for each of the buttons that are represented by the dates on the calendar. Each button will listen
+        //to call a different instance of activityTwo, showing the reminders that are listed for that day.
         public void ButtonListen(string monthText, string year)
         {
             
@@ -574,9 +660,9 @@ namespace PlannerApp
 
         }
 
-        //this function is meant to populate all the buttons in the calendar based on the current month
-        //date represents the date to be populated
-        //num represents the number of the button to be filled
+        //This function is meant to populate all the buttons in the calendar based on the current month.
+        //Date represents the date to be populated.
+        //Num represents the number of the button to be filled (so if January 1st was on a Tuesday, date would be 1 and num would be 2)
         public void PopulateElement(int num, int date)
         {
             switch(num)
@@ -752,8 +838,8 @@ namespace PlannerApp
             }
         }
 
-        //this function is meant to find out what day of the week the first of the month falls on
-        //month and year are strings containing the current information, 08 and 2021 for example
+        //This function is meant to find out what day of the week the first of the month falls on.
+        //month and year are strings containing the current information, 08 and 2021 for example.
         public void findInitDay(string month, string year)
         {
             int mon = Int32.Parse(month);
@@ -796,7 +882,7 @@ namespace PlannerApp
 
         }
 
-        //simple function to convert the int of a month to a string of the word equivalent
+        //This is a simple function to convert the int of a month to a string of the word equivalent.
         public static String findMonthText(String month)
         {
             switch(month)
@@ -829,6 +915,8 @@ namespace PlannerApp
             return "ERROR";
         }
 
+        //This is the first screen to display when the app starts, creating the main screen,
+        //showing the calendar and other important information. This is called from InitiateCalendar.
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -843,27 +931,39 @@ namespace PlannerApp
 
             sortUpcoming();
 
-            //the Textview above the main calendar that displays the month and year 
+            CreateNotificationChannel();
+
+            //Create a timer so that the reminders will be checked every minute so that notifications will send out.
+
+            var startTime = TimeSpan.Zero;
+            var periodSpan = TimeSpan.FromMinutes(1);
+
+            var timer = new System.Threading.Timer((e) =>
+            {
+                checkRemindersForNotif();
+            }, null, startTime, periodSpan);
+
+            //The Textview above the main calendar that displays the month and year.
             var dateOnScreen = FindViewById<TextView>(Resource.Id.monthCurrent);
 
-            //finds the month/date/year based on the DateTime.Now function
+            //This finds the month/date/year based on the DateTime.Now function, which has been sent from InitiateCalendar.
             string month = Intent.GetStringExtra("month");
             string date = Intent.GetStringExtra("date");
             string year = Intent.GetStringExtra("year");
 
-            //display the date on the screen with the month (switched to String)
+            //This displays the date on the screen with the month (switched to a String).
             string monthText = findMonthText(month);
             string monthYear = monthText.Substring(0, 3) + " " + year;
             dateOnScreen.Text = monthYear;
 
-            //this will populate the calendar
+            //This will populate the calendar.
             findInitDay(month, year);
 
 
-            //listen for all the calendar buttons to switch the layout
+            //This listens for all the calendar buttons to switch the layout.
             ButtonListen(month, year);
 
-            //listens for the add button to switch to the add screen
+            //This listens for the add button to switch to the add screen.
             var ButtonAdd = FindViewById<Button>(Resource.Id.addButton);
             ButtonAdd.Click += (s, e) =>
             {
@@ -871,7 +971,7 @@ namespace PlannerApp
                 StartActivity(nextActivity);
             };
 
-            //this button listens for the upCalendar button to move the calendar up one month
+            //This button listens for the upCalendar button to move the calendar up one month.
             var upCalendar = FindViewById<Button>(Resource.Id.UpCalendar);
             upCalendar.Click += (s, e) =>
             {
@@ -899,7 +999,7 @@ namespace PlannerApp
 
             };
 
-            //this button listens for the downCalendar to move the calendar down one month
+            //This button listens for the downCalendar to move the calendar down one month.
             var downCalendar = FindViewById<Button>(Resource.Id.DownCalendar);
             downCalendar.Click += (s, e) =>
             {
@@ -928,9 +1028,6 @@ namespace PlannerApp
 
             
         }
-
-        //deal with the permissions for the activity
-
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);

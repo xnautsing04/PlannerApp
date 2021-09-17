@@ -5,7 +5,7 @@ using Android.Widget;
 using Android.Content;
 using System;
 
-//This will initiate the calendar with the current month, date, and year to be stored for MainActivity
+//This will initiate the calendar with the current month, date, and year to be stored for MainActivity.
 
 namespace PlannerApp
 {
@@ -21,11 +21,12 @@ namespace PlannerApp
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
-            //Find the current month, date, and year from the current time
+            //Find the current month, date, and year from the current time.
             string month = DateTime.Now.ToString("MM");
             string date = DateTime.Now.ToString("dd");
             string year = DateTime.Now.ToString("yyyy");
 
+            //Now, begin the MainActivity.
             Intent nextActivity = new Intent(this, typeof(MainActivity));
             nextActivity.PutExtra("month", month);
             nextActivity.PutExtra("date", date);

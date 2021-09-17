@@ -2,22 +2,22 @@
 using System.IO;
 
 
-//this class stores the constants and flags to be used by the ReminderDatabase at all times
+//This class stores the constants and flags to be used by the ReminderDatabase at all times.
 public static class Constants
 {
-    //this will store the name of the database to be used within ReminderDatabase
+    //This will store the name of the database to be used within ReminderDatabase.
     public const string DatabaseFilename = "savedReminders.db3";
 
     public const SQLite.SQLiteOpenFlags Flags =
 
-        //apply read/write mode for the database
+        //Apply read/write mode for the database.
         SQLite.SQLiteOpenFlags.ReadWrite |
-        //create the database if it is currently not in existence
+        //Create the database if it is currently not in existence.
         SQLite.SQLiteOpenFlags.Create |
-        //enable multi-threaded access
+        //Enable multi-threaded access.
         SQLite.SQLiteOpenFlags.SharedCache;
 
-        //this represents the path to where the data is stored
+        //This represents the path to where the data is stored.
         public static string DatabasePath
         {
             get
